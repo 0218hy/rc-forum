@@ -27,14 +27,14 @@ func NewHandler(service Service) *handler {
 func (h *handler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	// 1. Call service -> GetUserProfile
 	id := chi.URLParam(r, "id")
-	userID, err := strconv.ParseInt(id, 10, 64)
+	userID, err := strconv.Atoi(id)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
-	profile, err := h.service.GetUserProfile(r.Context(), userID)
+	profile, err := h.service.GetUserProfile(r.Context(), int32(userID))
 	if err != nil {
 		 if errors.Is(err, sql.ErrNoRows) {
 			log.Println("No user found with that ID")

@@ -34,7 +34,7 @@ Residential College (RC) web forum is a centralized web-based platform to suppor
 
 # Adding new table
 1. Create a new migration file
-    ```goose -dir db/migration -s create create_products sql```
+    ```goose -dir db/migrations -s create create_products sql```
 2. Generate SQLC code
     ```sqlc generate```
 3. Run the migrations

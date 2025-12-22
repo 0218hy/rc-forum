@@ -6,7 +6,7 @@ import (
 )
 
 type Service interface {
-	GetUserProfile(ctx context.Context, userID int64) (repo.User, error)
+	GetUserProfile(ctx context.Context, userID int32) (repo.User, error)
 }
 
 type svc struct {
@@ -19,6 +19,6 @@ func NewService(repo *repo.Queries) Service {
 	}
 }
 
-func (s *svc) GetUserProfile(ctx context.Context, userID int64) (repo.User, error) {
+func (s *svc) GetUserProfile(ctx context.Context, userID int32) (repo.User, error) {
 	return s.repo.GetUserByID(ctx, userID)
 }

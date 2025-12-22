@@ -10,7 +10,7 @@ import (
 
 type Querier interface {
 	FindProductByID(ctx context.Context, id int32) (Product, error)
-	GetUserByID(ctx context.Context, id int64) (User, error)
+	GetUserByID(ctx context.Context, id int32) (User, error)
 	ListProducts(ctx context.Context) ([]Product, error)
 }
 

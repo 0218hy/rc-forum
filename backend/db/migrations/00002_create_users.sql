@@ -3,7 +3,7 @@
 CREATE EXTENSION IF NOT EXISTS citext;
 
 CREATE TABLE IF NOT EXISTS users (
-    id BIGSERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     email CITEXT  UNIQUE NOT NULL CHECK (email ~ '^e\d{7}@u\.nus\.edu$'),
     role TEXT NOT NULL CHECK (role IN ('RA', 'resident'))

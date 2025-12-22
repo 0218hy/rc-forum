@@ -8,9 +8,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AnnouncementPost struct {
+	PostID    int32            `json:"post_id"`
+	ExpiresAt pgtype.Timestamp `json:"expires_at"`
+}
+
 type Post struct {
 	ID        int32            `json:"id"`
-	AuthorID  interface{}      `json:"author_id"`
+	AuthorID  int32            `json:"author_id"`
 	Type      string           `json:"type"`
 	Title     string           `json:"title"`
 	Body      string           `json:"body"`
@@ -26,7 +31,7 @@ type Product struct {
 }
 
 type User struct {
-	ID    int64  `json:"id"`
+	ID    int32  `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 	Role  string `json:"role"`
