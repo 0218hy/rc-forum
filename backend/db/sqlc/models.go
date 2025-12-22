@@ -8,6 +8,15 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Post struct {
+	ID        int32            `json:"id"`
+	AuthorID  interface{}      `json:"author_id"`
+	Type      string           `json:"type"`
+	Title     string           `json:"title"`
+	Body      string           `json:"body"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+}
+
 type Product struct {
 	ID        int32              `json:"id"`
 	Name      string             `json:"name"`
