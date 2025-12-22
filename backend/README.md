@@ -14,3 +14,20 @@ Residential College (RC) web forum is a centralized web-based platform to suppor
 - sqlc
 - Goose
 - PostgreSQL
+
+# Updating my backend database
+1. Connect to PostgreSQL
+    ```psql -h localhost -U rc_user -d rc_forum```
+2. List database
+    ```\l``` 
+3. Connect to database
+    ```\c rc_forum```
+4. Check current Goose migration
+    ```SELECT * FROM goose_db_version;```
+5. Remove applied migration (if needed)
+    ```DELETE FROM goose_db_version WHERE version_id = <version_number>```
+6. Verify current tables
+    ```\dt```
+
+# Running go 
+```go run cmd/*.go```

@@ -2,6 +2,7 @@ package products
 
 import (
 	"context"
+	repo "rc-forum-backend/db/sqlc"
 )
 
 type Service interface {
@@ -9,11 +10,11 @@ type Service interface {
 }
 
 type svc struct {
-	// repository
+	repo repo.Querier
 }
 
-func NewService() Service {
-	return &svc{}
+func NewService(repo repo.Querier) Service {
+	return &svc{repo: repo}
 }
 
 func (s *svc) ListProducts(ctx context.Context) (error) {

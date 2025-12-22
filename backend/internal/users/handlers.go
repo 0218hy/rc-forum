@@ -1,6 +1,8 @@
 package users
 
 import (
+	"database/sql"
+	"errors"
 	"log"
 	"net/http"
 	"rc-forum-backend/internal/json"
@@ -34,9 +36,15 @@ func (h *handler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 
 	profile, err := h.service.GetUserProfile(r.Context(), userID)
 	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		 if errors.Is(err, sql.ErrNoRows) {
+			log.Println("No user found with that ID")
+			http.Error(w, "User not found", http.StatusNotFound);
+			return
+		} else {
+			log.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// 2. Return JSON response into an HTTP response

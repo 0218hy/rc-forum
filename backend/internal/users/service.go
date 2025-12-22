@@ -3,8 +3,6 @@ package users
 import (
 	"context"
 	repo "rc-forum-backend/db/sqlc"
-
-	"github.com/jackc/pgx/v5"
 )
 
 type Service interface {
@@ -13,13 +11,11 @@ type Service interface {
 
 type svc struct {
 	repo *repo.Queries
-	db   *pgx.Conn
 }
 
-func NewService(repo *repo.Queries, db *pgx.Conn) Service {
+func NewService(repo *repo.Queries) Service {
 	return &svc{
 		repo: repo,
-		db:   db,
 	}
 }
 

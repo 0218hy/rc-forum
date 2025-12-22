@@ -3,12 +3,14 @@ package main
 import (
 	"log"
 	"net/http"
+	repo "rc-forum-backend/db/sqlc"
 	"rc-forum-backend/internal/products"
+	"rc-forum-backend/internal/users"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // mount
@@ -32,9 +34,9 @@ func (app *application) mount() http.Handler {
 	productHandler := products.NewHandler(productService)
 	r.Get("/products", productHandler.ListProducts)
 
-	orderService := orders.NewService(repo.New(app.db), app.db)
-	ordersHandler := orders.NewHandler(orderService)
-	r.Post("/orders", ordersHandler.PlaceOrder)
+	usersService := users.NewService(repo.New(app.db))
+	usersHandler := users.NewHandler(usersService)
+	r.Get("/users/{id}", usersHandler.GetUserProfile)
 
 	return r
 }
@@ -57,7 +59,7 @@ func (app *application) run(h http.Handler) error {
 type application struct {
 	config config
 	// logger
-	db    *pgx.Conn
+	db    *pgxpool.Pool
 }
 
 type config struct {

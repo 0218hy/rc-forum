@@ -6,15 +6,15 @@ import (
 	"os"
 	"rc-forum-backend/internal/env"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
 	ctx := context.Background()
-	
+
 	cfg := config{
 		addr: ":8080",
-		db:   dbConfig{
+		db: dbConfig{
 			dsn: env.GetString("GOOSE_DBSTRING", "host = localhost user=rc_user password=rc_password dbname=rc_forum port=5432 sslmode=disable"),
 		},
 	}
@@ -24,17 +24,17 @@ func main() {
 	slog.SetDefault(logger)
 
 	// Database
-	conn, err := pgx.Connect(ctx, cfg.db.dsn)
+	pool, err := pgxpool.New(ctx, cfg.db.dsn)
 	if err != nil {
 		panic(err)
 	}
-	defer conn.Close(context.Background())
+	defer pool.Close()
 
-	logger.Info("Database connection established", "dsn", cfg.db.dsn)
+	logger.Info("Database connection established")
 
 	api := application{
 		config: cfg,
-		db:     conn,
+		db:     pool,
 	}
 
 	if err := api.run(api.mount()); err != nil {
