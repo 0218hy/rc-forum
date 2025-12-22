@@ -31,3 +31,12 @@ Residential College (RC) web forum is a centralized web-based platform to suppor
 
 # Running go 
 ```go run cmd/*.go```
+
+# Adding new table
+1. Create a new migration file
+    ```goose -dir db/migration -s create create_products sql```
+2. Run the migrations
+    ```goose up```
+3. Generate SQLC code
+    ```sqlc generate```
+
