@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS announcement_posts (
     post_id INT PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE,
-    expires_at TIMESTAMP NOT NULL
+    expires_at TIMESTAMP
 );
 -- +goose StatementEnd
 

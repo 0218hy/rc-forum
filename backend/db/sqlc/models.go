@@ -5,21 +5,305 @@
 package repo
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type ActivityCategoryType string
+
+const (
+	ActivityCategoryTypeFooddrinks    ActivityCategoryType = "food&drinks"
+	ActivityCategoryTypeSportsfitness ActivityCategoryType = "sports&fitness"
+	ActivityCategoryTypeEntertainment ActivityCategoryType = "entertainment"
+	ActivityCategoryTypeOutdoornature ActivityCategoryType = "outdoor&nature"
+	ActivityCategoryTypeStudywork     ActivityCategoryType = "study&work"
+	ActivityCategoryTypeEvents        ActivityCategoryType = "events"
+)
+
+func (e *ActivityCategoryType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ActivityCategoryType(s)
+	case string:
+		*e = ActivityCategoryType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ActivityCategoryType: %T", src)
+	}
+	return nil
+}
+
+type NullActivityCategoryType struct {
+	ActivityCategoryType ActivityCategoryType `json:"activity_category_type"`
+	Valid                bool                 `json:"valid"` // Valid is true if ActivityCategoryType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullActivityCategoryType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ActivityCategoryType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ActivityCategoryType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullActivityCategoryType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ActivityCategoryType), nil
+}
+
+type ListingStatusType string
+
+const (
+	ListingStatusTypeOpen      ListingStatusType = "open"
+	ListingStatusTypeReserved  ListingStatusType = "reserved"
+	ListingStatusTypeCompleted ListingStatusType = "completed"
+)
+
+func (e *ListingStatusType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ListingStatusType(s)
+	case string:
+		*e = ListingStatusType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ListingStatusType: %T", src)
+	}
+	return nil
+}
+
+type NullListingStatusType struct {
+	ListingStatusType ListingStatusType `json:"listing_status_type"`
+	Valid             bool              `json:"valid"` // Valid is true if ListingStatusType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullListingStatusType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ListingStatusType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ListingStatusType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullListingStatusType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ListingStatusType), nil
+}
+
+type ListingType string
+
+const (
+	ListingTypeBuy  ListingType = "buy"
+	ListingTypeSell ListingType = "sell"
+	ListingTypeGive ListingType = "give"
+)
+
+func (e *ListingType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ListingType(s)
+	case string:
+		*e = ListingType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ListingType: %T", src)
+	}
+	return nil
+}
+
+type NullListingType struct {
+	ListingType ListingType `json:"listing_type"`
+	Valid       bool        `json:"valid"` // Valid is true if ListingType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullListingType) Scan(value interface{}) error {
+	if value == nil {
+		ns.ListingType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ListingType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullListingType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ListingType), nil
+}
+
+type PostType string
+
+const (
+	PostTypeAnnouncement PostType = "announcement"
+	PostTypeReport       PostType = "report"
+	PostTypeMarketplace  PostType = "marketplace"
+	PostTypeOpenjio      PostType = "openjio"
+	PostTypeNormal       PostType = "normal"
+)
+
+func (e *PostType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PostType(s)
+	case string:
+		*e = PostType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PostType: %T", src)
+	}
+	return nil
+}
+
+type NullPostType struct {
+	PostType PostType `json:"post_type"`
+	Valid    bool     `json:"valid"` // Valid is true if PostType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPostType) Scan(value interface{}) error {
+	if value == nil {
+		ns.PostType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PostType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPostType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PostType), nil
+}
+
+type ReportStatus string
+
+const (
+	ReportStatusOpen       ReportStatus = "open"
+	ReportStatusInProgress ReportStatus = "in_progress"
+	ReportStatusResolved   ReportStatus = "resolved"
+)
+
+func (e *ReportStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReportStatus(s)
+	case string:
+		*e = ReportStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReportStatus: %T", src)
+	}
+	return nil
+}
+
+type NullReportStatus struct {
+	ReportStatus ReportStatus `json:"report_status"`
+	Valid        bool         `json:"valid"` // Valid is true if ReportStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReportStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReportStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReportStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReportStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReportStatus), nil
+}
+
+type UrgencyLevel string
+
+const (
+	UrgencyLevelLow    UrgencyLevel = "low"
+	UrgencyLevelMedium UrgencyLevel = "medium"
+	UrgencyLevelHigh   UrgencyLevel = "high"
+)
+
+func (e *UrgencyLevel) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UrgencyLevel(s)
+	case string:
+		*e = UrgencyLevel(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UrgencyLevel: %T", src)
+	}
+	return nil
+}
+
+type NullUrgencyLevel struct {
+	UrgencyLevel UrgencyLevel `json:"urgency_level"`
+	Valid        bool         `json:"valid"` // Valid is true if UrgencyLevel is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUrgencyLevel) Scan(value interface{}) error {
+	if value == nil {
+		ns.UrgencyLevel, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UrgencyLevel.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUrgencyLevel) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UrgencyLevel), nil
+}
 
 type AnnouncementPost struct {
 	PostID    int32            `json:"post_id"`
 	ExpiresAt pgtype.Timestamp `json:"expires_at"`
 }
 
+type MarketplacePost struct {
+	PostID        int32             `json:"post_id"`
+	Listing       ListingType       `json:"listing"`
+	Price         pgtype.Numeric    `json:"price"`
+	Quantity      int32             `json:"quantity"`
+	ListingStatus ListingStatusType `json:"listing_status"`
+}
+
+type OpenjioPost struct {
+	PostID           int32                `json:"post_id"`
+	ActivityCategory ActivityCategoryType `json:"activity_category"`
+	Location         string               `json:"location"`
+	EventDate        pgtype.Date          `json:"event_date"`
+	StartTime        pgtype.Time          `json:"start_time"`
+	EndTime          pgtype.Time          `json:"end_time"`
+}
+
 type Post struct {
 	ID        int32            `json:"id"`
 	AuthorID  int32            `json:"author_id"`
-	Type      string           `json:"type"`
+	Type      PostType         `json:"type"`
 	Title     string           `json:"title"`
 	Body      string           `json:"body"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`
+	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
 type Product struct {
@@ -28,6 +312,12 @@ type Product struct {
 	Price     int32              `json:"price"`
 	Quantity  int32              `json:"quantity"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type ReportPost struct {
+	PostID  int32        `json:"post_id"`
+	Status  ReportStatus `json:"status"`
+	Urgency UrgencyLevel `json:"urgency"`
 }
 
 type User struct {

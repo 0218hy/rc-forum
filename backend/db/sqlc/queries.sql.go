@@ -7,6 +7,8 @@ package repo
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const findProductByID = `-- name: FindProductByID :one
@@ -24,6 +26,99 @@ func (q *Queries) FindProductByID(ctx context.Context, id int32) (Product, error
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getAllPosts = `-- name: GetAllPosts :many
+SELECT
+    p.id, p.author_id, p.type, p.title, p.body, p.created_at, p.updated_at,
+    a.expires_at AS announcement_expires_at,
+    r.status        AS report_status,
+    r.urgency       AS report_urgency,
+    m.listing AS marketplace_listing,
+    m.price AS marketplace_price,
+    m.quantity AS marketplace_quantity,
+    m.listing_status AS marketplace_listing_status,
+    o.activity_category AS openjio_activity_category,
+    o.location AS openjio_location,
+    o.event_date AS openjio_event_date,
+    o.start_time AS openjio_start_time,
+    o.end_time AS openjio_end_time
+FROM posts p
+LEFT JOIN announcement_posts a
+    ON p.type = 'announcement'
+   AND a.post_id = p.id
+LEFT JOIN report_posts r
+    ON p.type = 'report'
+   AND r.post_id = p.id
+LEFT JOIN marketplace_posts m 
+    ON p.type = 'marketplace'
+    AND m.post_id = p.id
+LEFT JOIN openjio_posts o
+    ON p.type = 'openjio'
+   AND o.post_id = p.id
+ORDER BY p.created_at DESC
+`
+
+type GetAllPostsRow struct {
+	ID                       int32                    `json:"id"`
+	AuthorID                 int32                    `json:"author_id"`
+	Type                     PostType                 `json:"type"`
+	Title                    string                   `json:"title"`
+	Body                     string                   `json:"body"`
+	CreatedAt                pgtype.Timestamp         `json:"created_at"`
+	UpdatedAt                pgtype.Timestamp         `json:"updated_at"`
+	AnnouncementExpiresAt    pgtype.Timestamp         `json:"announcement_expires_at"`
+	ReportStatus             NullReportStatus         `json:"report_status"`
+	ReportUrgency            NullUrgencyLevel         `json:"report_urgency"`
+	MarketplaceListing       NullListingType          `json:"marketplace_listing"`
+	MarketplacePrice         pgtype.Numeric           `json:"marketplace_price"`
+	MarketplaceQuantity      pgtype.Int4              `json:"marketplace_quantity"`
+	MarketplaceListingStatus NullListingStatusType    `json:"marketplace_listing_status"`
+	OpenjioActivityCategory  NullActivityCategoryType `json:"openjio_activity_category"`
+	OpenjioLocation          pgtype.Text              `json:"openjio_location"`
+	OpenjioEventDate         pgtype.Date              `json:"openjio_event_date"`
+	OpenjioStartTime         pgtype.Time              `json:"openjio_start_time"`
+	OpenjioEndTime           pgtype.Time              `json:"openjio_end_time"`
+}
+
+func (q *Queries) GetAllPosts(ctx context.Context) ([]GetAllPostsRow, error) {
+	rows, err := q.db.Query(ctx, getAllPosts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllPostsRow
+	for rows.Next() {
+		var i GetAllPostsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.AuthorID,
+			&i.Type,
+			&i.Title,
+			&i.Body,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.AnnouncementExpiresAt,
+			&i.ReportStatus,
+			&i.ReportUrgency,
+			&i.MarketplaceListing,
+			&i.MarketplacePrice,
+			&i.MarketplaceQuantity,
+			&i.MarketplaceListingStatus,
+			&i.OpenjioActivityCategory,
+			&i.OpenjioLocation,
+			&i.OpenjioEventDate,
+			&i.OpenjioStartTime,
+			&i.OpenjioEndTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUserByID = `-- name: GetUserByID :one

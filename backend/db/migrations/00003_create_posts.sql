@@ -1,12 +1,15 @@
 -- +goose Up
 -- +goose StatementBegin
+CREATE TYPE post_type AS ENUM ('announcement', 'report','marketplace','openjio', 'normal');
+
 CREATE TABLE IF NOT EXISTS posts (
     id SERIAL PRIMARY KEY,
     author_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type TEXT NOT NULL CHECK (type IN ('announcement', 'report','marketplace','openjio')),
+    type post_type NOT NULL DEFAULT 'normal',
     title TEXT NOT NULL,
     body TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 -- +goose StatementEnd
 
