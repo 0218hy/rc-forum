@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	repo "rc-forum-backend/db/sqlc"
+	"rc-forum-backend/internal/auth/authhttp"
 	"rc-forum-backend/internal/auth"
 	"rc-forum-backend/internal/env"
 	"rc-forum-backend/internal/posts"
@@ -34,33 +35,55 @@ func (app *application) mount() http.Handler {
 		log.Fatal("secretKey must be at least 32 characters long")
 	}
 
+	// create token maker
+	tokenMaker := auth.NewJWTMaker(secretKey)
+
 	// health check
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("all good\n"))
+		w.Write([]byte("all good!\n"))
   	})
 
 	// For users
 	usersService := users.NewService(repo.New(app.db))
 	usersHandler := users.NewHandler(usersService)
-	r.Get("/users/{id}", usersHandler.GetUserByID)
-	r.Get("/users/email/{email}", usersHandler.GetUserByEmail)
+	// For admin users
+	r.Group(func(r chi.Router) {
+		r.Use(auth.GetAdminMiddlewareFunc(tokenMaker))
+		r.Get("/users/{id}", usersHandler.GetUserByID)
+		r.Get("/users/{email}", usersHandler.GetUserByEmail)
+	})
+	// For auth users
+	r.Group(func(r chi.Router) {
+		r.Use(auth.GetAuthMiddlewareFunc(tokenMaker))
+		r.Get("/users/me", usersHandler.GetMyProfile)
+	})
 
 	// For auth
-	authService := auth.NewService(repo.New(app.db))
-	authHandler := auth.NewHandler(authService, usersService, secretKey)
-	r.Post("/register", authHandler.HandleRegister)
-	r.Post("/login", authHandler.HandleLogin)
-	r.Post("/logout", authHandler.HandleLogout)
-	r.Post("/renew_access_token", authHandler.RenewAccessToken)
-	
+	authService := authhttp.NewService(repo.New(app.db))
+	authHandler := authhttp.NewHandler(authService, usersService, tokenMaker)
+	// For public
+	r.Route("/auth", func(r chi.Router) {
+		r.Post("/register", authHandler.HandleRegister)
+		r.Post("/login", authHandler.HandleLogin)
+		r.Post("/renew", authHandler.RenewAccessToken)
+	})
+	//For auth users
+	r.Group(func(r chi.Router) {
+		r.Use(auth.GetAuthMiddlewareFunc(tokenMaker))
+		r.Post("/logout", authHandler.HandleLogout)
+	})
 
 	// For posts
 	postsService := posts.NewService(repo.New(app.db), app.db)
 	postsHandler := posts.NewHandler(postsService)
 	r.Get("/posts", postsHandler.GetAllPosts)
 	r.Get("/posts/{id}", postsHandler.GetPostByID)
-	r.Delete("/posts/{id}", postsHandler.DeletePostByID)
-	r.Post("/posts", postsHandler.CreatePost)
+	// Auth user 
+	r.Group(func(r chi.Router) {
+		r.Use(auth.GetAuthMiddlewareFunc(tokenMaker))
+		r.Patch("/posts/{id}", postsHandler.UpdatePostByID)
+		r.Post("/posts", postsHandler.CreatePost)
+	})
 
 	return r
 }

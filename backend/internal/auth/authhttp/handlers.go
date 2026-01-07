@@ -18,11 +18,11 @@ type handler struct {
 	tokenMaker *auth.JWTMaker
 }
 
-func NewHandler(service Service, userService users.Service, secretKey string) *handler {
+func NewHandler(service Service, userService users.Service, tokenMaker *auth.JWTMaker) *handler {
 	return &handler{
 		service:    service,
 		userService: userService,
-		tokenMaker:  auth.NewJWTMaker(secretKey),
+		tokenMaker:  tokenMaker,
 	}
 }
 
