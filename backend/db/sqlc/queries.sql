@@ -139,3 +139,6 @@ UPDATE sessions SET is_revoked = true WHERE id = $1;
 
 -- name: DeleteSessionsByUserID :exec
 DELETE FROM sessions WHERE user_id = $1;  
+
+-- name: DeleteUserByID :exec
+DELETE FROM users WHERE id = $1;

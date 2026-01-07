@@ -18,6 +18,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (int32, error)
 	DeletePostByID(ctx context.Context, id int32) error
 	DeleteSessionsByUserID(ctx context.Context, userID int32) error
+	DeleteUserByID(ctx context.Context, id int32) error
 	FindPostByID(ctx context.Context, id int32) (FindPostByIDRow, error)
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 	FindUserByID(ctx context.Context, id int32) (User, error)

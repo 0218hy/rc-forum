@@ -226,6 +226,15 @@ func (q *Queries) DeleteSessionsByUserID(ctx context.Context, userID int32) erro
 	return err
 }
 
+const deleteUserByID = `-- name: DeleteUserByID :exec
+DELETE FROM users WHERE id = $1
+`
+
+func (q *Queries) DeleteUserByID(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteUserByID, id)
+	return err
+}
+
 const findPostByID = `-- name: FindPostByID :one
 SELECT
     p.id, p.author_id, p.type, p.title, p.body, p.created_at, p.updated_at,

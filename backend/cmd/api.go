@@ -51,6 +51,7 @@ func (app *application) mount() http.Handler {
 		r.Use(auth.GetAdminMiddlewareFunc(tokenMaker))
 		r.Get("/users/{id}", usersHandler.GetUserByID)
 		r.Get("/users/{email}", usersHandler.GetUserByEmail)
+		r.Delete("/users/{id}", usersHandler.DeleteUserByID)
 	})
 	// For auth users
 	r.Group(func(r chi.Router) {

@@ -9,6 +9,7 @@ type Service interface {
 	GetUserByID(ctx context.Context, userID int32) (repo.User, error)
 	GetUserByEmail(ctx context.Context, email string) (repo.User, error)
 	CreateUser(ctx context.Context, tempUser CreateUserParams) (int32, error)
+	DeleteUserByID(ctx context.Context, userID int32) error
 }
 
 type svc struct {
@@ -41,4 +42,8 @@ func (s *svc) CreateUser(ctx context.Context, tempUser CreateUserParams) (int32,
 	}
 
 	return userID, nil
+}
+
+func (s *svc) DeleteUserByID(ctx context.Context, userID int32) error {
+	return s.repo.DeleteUserByID(ctx, userID)
 }

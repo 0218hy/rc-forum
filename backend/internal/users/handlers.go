@@ -77,3 +77,27 @@ func (h *handler) GetUserByEmail(w http.ResponseWriter, r *http.Request) {
 
 	json.Write(w, http.StatusOK, user)
 }
+
+func (h *handler) DeleteUserByID(w http.ResponseWriter, r *http.Request) {
+	userID, err := utility.GetID(r)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	err = h.service.DeleteUserByID(r.Context(), userID)
+	if err != nil {
+		 if errors.Is(err, sql.ErrNoRows) {
+			log.Println("No user found with that ID")
+			http.Error(w, "User not found", http.StatusNotFound);
+			return
+		} else {
+			log.Println(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	json.Write(w, http.StatusOK, "User deleted successfully")
+}
