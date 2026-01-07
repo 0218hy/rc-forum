@@ -11,24 +11,355 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const findProductByID = `-- name: FindProductByID :one
-SELECT id, name, price, quantity, created_at FROM products WHERE id = $1
+const createAnnouncement = `-- name: CreateAnnouncement :exec
+INSERT INTO announcement_posts (
+    post_id,
+    expires_at
+) VALUES ($1, $2)
 `
 
-func (q *Queries) FindProductByID(ctx context.Context, id int32) (Product, error) {
-	row := q.db.QueryRow(ctx, findProductByID, id)
-	var i Product
+type CreateAnnouncementParams struct {
+	PostID    int32            `json:"post_id"`
+	ExpiresAt pgtype.Timestamp `json:"expires_at"`
+}
+
+func (q *Queries) CreateAnnouncement(ctx context.Context, arg CreateAnnouncementParams) error {
+	_, err := q.db.Exec(ctx, createAnnouncement, arg.PostID, arg.ExpiresAt)
+	return err
+}
+
+const createMarketplace = `-- name: CreateMarketplace :exec
+INSERT INTO marketplace_posts (
+    post_id,
+    listing,
+    price,
+    quantity,
+    listing_status
+) VALUES ($1, $2, $3, $4, $5)
+`
+
+type CreateMarketplaceParams struct {
+	PostID        int32             `json:"post_id"`
+	Listing       ListingType       `json:"listing"`
+	Price         pgtype.Numeric    `json:"price"`
+	Quantity      int32             `json:"quantity"`
+	ListingStatus ListingStatusType `json:"listing_status"`
+}
+
+func (q *Queries) CreateMarketplace(ctx context.Context, arg CreateMarketplaceParams) error {
+	_, err := q.db.Exec(ctx, createMarketplace,
+		arg.PostID,
+		arg.Listing,
+		arg.Price,
+		arg.Quantity,
+		arg.ListingStatus,
+	)
+	return err
+}
+
+const createOpenjio = `-- name: CreateOpenjio :exec
+INSERT INTO openjio_posts (
+    post_id,
+    activity_category,
+    location,
+    event_date,
+    start_time,
+    end_time
+) VALUES ($1, $2, $3, $4, $5, $6)
+`
+
+type CreateOpenjioParams struct {
+	PostID           int32                `json:"post_id"`
+	ActivityCategory ActivityCategoryType `json:"activity_category"`
+	Location         string               `json:"location"`
+	EventDate        pgtype.Date          `json:"event_date"`
+	StartTime        pgtype.Time          `json:"start_time"`
+	EndTime          pgtype.Time          `json:"end_time"`
+}
+
+func (q *Queries) CreateOpenjio(ctx context.Context, arg CreateOpenjioParams) error {
+	_, err := q.db.Exec(ctx, createOpenjio,
+		arg.PostID,
+		arg.ActivityCategory,
+		arg.Location,
+		arg.EventDate,
+		arg.StartTime,
+		arg.EndTime,
+	)
+	return err
+}
+
+const createPost = `-- name: CreatePost :one
+INSERT INTO posts (
+    author_id,
+    type,
+    title,
+    body
+)  VALUES ($1, $2, $3, $4) RETURNING id, author_id, type, title, body, created_at, updated_at
+`
+
+type CreatePostParams struct {
+	AuthorID int32    `json:"author_id"`
+	Type     PostType `json:"type"`
+	Title    string   `json:"title"`
+	Body     string   `json:"body"`
+}
+
+func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
+	row := q.db.QueryRow(ctx, createPost,
+		arg.AuthorID,
+		arg.Type,
+		arg.Title,
+		arg.Body,
+	)
+	var i Post
 	err := row.Scan(
 		&i.ID,
-		&i.Name,
-		&i.Price,
-		&i.Quantity,
+		&i.AuthorID,
+		&i.Type,
+		&i.Title,
+		&i.Body,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createReport = `-- name: CreateReport :exec
+INSERT INTO report_posts (
+    post_id,
+    status,
+    urgency
+) VALUES ($1, $2, $3)
+`
+
+type CreateReportParams struct {
+	PostID  int32        `json:"post_id"`
+	Status  ReportStatus `json:"status"`
+	Urgency UrgencyLevel `json:"urgency"`
+}
+
+func (q *Queries) CreateReport(ctx context.Context, arg CreateReportParams) error {
+	_, err := q.db.Exec(ctx, createReport, arg.PostID, arg.Status, arg.Urgency)
+	return err
+}
+
+const createSession = `-- name: CreateSession :one
+INSERT INTO sessions (
+    user_id,
+    refresh_token,
+    is_revoked,
+    expires_at
+) VALUES ($1, $2, $3, $4) RETURNING id, email, user_id, refresh_token, is_revoked, expires_at, created_at
+`
+
+type CreateSessionParams struct {
+	UserID       int32            `json:"user_id"`
+	RefreshToken string           `json:"refresh_token"`
+	IsRevoked    bool             `json:"is_revoked"`
+	ExpiresAt    pgtype.Timestamp `json:"expires_at"`
+}
+
+func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error) {
+	row := q.db.QueryRow(ctx, createSession,
+		arg.UserID,
+		arg.RefreshToken,
+		arg.IsRevoked,
+		arg.ExpiresAt,
+	)
+	var i Session
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.UserID,
+		&i.RefreshToken,
+		&i.IsRevoked,
+		&i.ExpiresAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
-const getAllPosts = `-- name: GetAllPosts :many
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (
+    name,
+    email,
+    password,
+    is_admin
+) VALUES ($1, $2, $3, $4) RETURNING id
+`
+
+type CreateUserParams struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	IsAdmin  bool   `json:"is_admin"`
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int32, error) {
+	row := q.db.QueryRow(ctx, createUser,
+		arg.Name,
+		arg.Email,
+		arg.Password,
+		arg.IsAdmin,
+	)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const deletePostByID = `-- name: DeletePostByID :exec
+DELETE FROM posts WHERE id = $1
+`
+
+func (q *Queries) DeletePostByID(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deletePostByID, id)
+	return err
+}
+
+const deleteSessionsByUserID = `-- name: DeleteSessionsByUserID :exec
+DELETE FROM sessions WHERE user_id = $1
+`
+
+func (q *Queries) DeleteSessionsByUserID(ctx context.Context, userID int32) error {
+	_, err := q.db.Exec(ctx, deleteSessionsByUserID, userID)
+	return err
+}
+
+const findPostByID = `-- name: FindPostByID :one
+SELECT
+    p.id, p.author_id, p.type, p.title, p.body, p.created_at, p.updated_at,
+    a.expires_at AS announcement_expires_at,
+    r.status        AS report_status,
+    r.urgency       AS report_urgency,
+    m.listing AS marketplace_listing,
+    m.price AS marketplace_price,
+    m.quantity AS marketplace_quantity,
+    m.listing_status AS marketplace_listing_status,
+    o.activity_category AS openjio_activity_category,
+    o.location AS openjio_location,
+    o.event_date AS openjio_event_date,
+    o.start_time AS openjio_start_time,
+    o.end_time AS openjio_end_time
+FROM posts p
+LEFT JOIN announcement_posts a
+    ON p.type = 'announcement'
+   AND a.post_id = p.id
+LEFT JOIN report_posts r
+    ON p.type = 'report'
+   AND r.post_id = p.id
+LEFT JOIN marketplace_posts m 
+    ON p.type = 'marketplace'
+    AND m.post_id = p.id
+LEFT JOIN openjio_posts o
+    ON p.type = 'openjio'
+   AND o.post_id = p.id
+WHERE p.id = $1
+`
+
+type FindPostByIDRow struct {
+	ID                       int32                    `json:"id"`
+	AuthorID                 int32                    `json:"author_id"`
+	Type                     PostType                 `json:"type"`
+	Title                    string                   `json:"title"`
+	Body                     string                   `json:"body"`
+	CreatedAt                pgtype.Timestamp         `json:"created_at"`
+	UpdatedAt                pgtype.Timestamp         `json:"updated_at"`
+	AnnouncementExpiresAt    pgtype.Timestamp         `json:"announcement_expires_at"`
+	ReportStatus             NullReportStatus         `json:"report_status"`
+	ReportUrgency            NullUrgencyLevel         `json:"report_urgency"`
+	MarketplaceListing       NullListingType          `json:"marketplace_listing"`
+	MarketplacePrice         pgtype.Numeric           `json:"marketplace_price"`
+	MarketplaceQuantity      pgtype.Int4              `json:"marketplace_quantity"`
+	MarketplaceListingStatus NullListingStatusType    `json:"marketplace_listing_status"`
+	OpenjioActivityCategory  NullActivityCategoryType `json:"openjio_activity_category"`
+	OpenjioLocation          pgtype.Text              `json:"openjio_location"`
+	OpenjioEventDate         pgtype.Date              `json:"openjio_event_date"`
+	OpenjioStartTime         pgtype.Time              `json:"openjio_start_time"`
+	OpenjioEndTime           pgtype.Time              `json:"openjio_end_time"`
+}
+
+func (q *Queries) FindPostByID(ctx context.Context, id int32) (FindPostByIDRow, error) {
+	row := q.db.QueryRow(ctx, findPostByID, id)
+	var i FindPostByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.AuthorID,
+		&i.Type,
+		&i.Title,
+		&i.Body,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AnnouncementExpiresAt,
+		&i.ReportStatus,
+		&i.ReportUrgency,
+		&i.MarketplaceListing,
+		&i.MarketplacePrice,
+		&i.MarketplaceQuantity,
+		&i.MarketplaceListingStatus,
+		&i.OpenjioActivityCategory,
+		&i.OpenjioLocation,
+		&i.OpenjioEventDate,
+		&i.OpenjioStartTime,
+		&i.OpenjioEndTime,
+	)
+	return i, err
+}
+
+const findUserByEmail = `-- name: FindUserByEmail :one
+SELECT id, name, email, password, is_admin FROM users WHERE email = $1
+`
+
+func (q *Queries) FindUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, findUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.IsAdmin,
+	)
+	return i, err
+}
+
+const findUserByID = `-- name: FindUserByID :one
+SELECT id, name, email, password, is_admin FROM users WHERE id = $1
+`
+
+func (q *Queries) FindUserByID(ctx context.Context, id int32) (User, error) {
+	row := q.db.QueryRow(ctx, findUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.IsAdmin,
+	)
+	return i, err
+}
+
+const getSession = `-- name: GetSession :one
+SELECT id, email, user_id, refresh_token, is_revoked, expires_at, created_at FROM sessions WHERE id = $1
+`
+
+func (q *Queries) GetSession(ctx context.Context, id string) (Session, error) {
+	row := q.db.QueryRow(ctx, getSession, id)
+	var i Session
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.UserID,
+		&i.RefreshToken,
+		&i.IsRevoked,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const listAllPosts = `-- name: ListAllPosts :many
 SELECT
     p.id, p.author_id, p.type, p.title, p.body, p.created_at, p.updated_at,
     a.expires_at AS announcement_expires_at,
@@ -59,7 +390,7 @@ LEFT JOIN openjio_posts o
 ORDER BY p.created_at DESC
 `
 
-type GetAllPostsRow struct {
+type ListAllPostsRow struct {
 	ID                       int32                    `json:"id"`
 	AuthorID                 int32                    `json:"author_id"`
 	Type                     PostType                 `json:"type"`
@@ -81,15 +412,15 @@ type GetAllPostsRow struct {
 	OpenjioEndTime           pgtype.Time              `json:"openjio_end_time"`
 }
 
-func (q *Queries) GetAllPosts(ctx context.Context) ([]GetAllPostsRow, error) {
-	rows, err := q.db.Query(ctx, getAllPosts)
+func (q *Queries) ListAllPosts(ctx context.Context) ([]ListAllPostsRow, error) {
+	rows, err := q.db.Query(ctx, listAllPosts)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetAllPostsRow
+	var items []ListAllPostsRow
 	for rows.Next() {
-		var i GetAllPostsRow
+		var i ListAllPostsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.AuthorID,
@@ -121,48 +452,30 @@ func (q *Queries) GetAllPosts(ctx context.Context) ([]GetAllPostsRow, error) {
 	return items, nil
 }
 
-const getUserByID = `-- name: GetUserByID :one
-SELECT id, name, email, role FROM users WHERE id = $1
+const revokeSession = `-- name: RevokeSession :exec
+UPDATE sessions SET is_revoked = true WHERE id = $1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id int32) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByID, id)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.Role,
-	)
-	return i, err
+func (q *Queries) RevokeSession(ctx context.Context, id string) error {
+	_, err := q.db.Exec(ctx, revokeSession, id)
+	return err
 }
 
-const listProducts = `-- name: ListProducts :many
-SELECT id, name, price, quantity, created_at FROM products
+const updatePostCore = `-- name: UpdatePostCore :exec
+UPDATE posts
+SET title = COALESCE($2, title),
+    body = COALESCE($3, body),
+    updated_at = NOW()
+WHERE id = $1
 `
 
-func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
-	rows, err := q.db.Query(ctx, listProducts)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Product
-	for rows.Next() {
-		var i Product
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Price,
-			&i.Quantity,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+type UpdatePostCoreParams struct {
+	ID    int32  `json:"id"`
+	Title string `json:"title"`
+	Body  string `json:"body"`
+}
+
+func (q *Queries) UpdatePostCore(ctx context.Context, arg UpdatePostCoreParams) error {
+	_, err := q.db.Exec(ctx, updatePostCore, arg.ID, arg.Title, arg.Body)
+	return err
 }

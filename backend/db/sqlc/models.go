@@ -279,6 +279,14 @@ type AnnouncementPost struct {
 	ExpiresAt pgtype.Timestamp `json:"expires_at"`
 }
 
+type Comment struct {
+	ID        int32            `json:"id"`
+	PostID    int32            `json:"post_id"`
+	AuthorID  int32            `json:"author_id"`
+	Body      string           `json:"body"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+}
+
 type MarketplacePost struct {
 	PostID        int32             `json:"post_id"`
 	Listing       ListingType       `json:"listing"`
@@ -306,23 +314,26 @@ type Post struct {
 	UpdatedAt pgtype.Timestamp `json:"updated_at"`
 }
 
-type Product struct {
-	ID        int32              `json:"id"`
-	Name      string             `json:"name"`
-	Price     int32              `json:"price"`
-	Quantity  int32              `json:"quantity"`
-	CreatedAt pgtype.Timestamptz `json:"created_at"`
-}
-
 type ReportPost struct {
 	PostID  int32        `json:"post_id"`
 	Status  ReportStatus `json:"status"`
 	Urgency UrgencyLevel `json:"urgency"`
 }
 
+type Session struct {
+	ID           string           `json:"id"`
+	Email        string           `json:"email"`
+	UserID       int32            `json:"user_id"`
+	RefreshToken string           `json:"refresh_token"`
+	IsRevoked    bool             `json:"is_revoked"`
+	ExpiresAt    pgtype.Timestamp `json:"expires_at"`
+	CreatedAt    pgtype.Timestamp `json:"created_at"`
+}
+
 type User struct {
-	ID    int32  `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	ID       int32  `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	IsAdmin  bool   `json:"is_admin"`
 }

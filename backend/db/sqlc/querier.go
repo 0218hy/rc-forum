@@ -9,10 +9,22 @@ import (
 )
 
 type Querier interface {
-	FindProductByID(ctx context.Context, id int32) (Product, error)
-	GetAllPosts(ctx context.Context) ([]GetAllPostsRow, error)
-	GetUserByID(ctx context.Context, id int32) (User, error)
-	ListProducts(ctx context.Context) ([]Product, error)
+	CreateAnnouncement(ctx context.Context, arg CreateAnnouncementParams) error
+	CreateMarketplace(ctx context.Context, arg CreateMarketplaceParams) error
+	CreateOpenjio(ctx context.Context, arg CreateOpenjioParams) error
+	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
+	CreateReport(ctx context.Context, arg CreateReportParams) error
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (int32, error)
+	DeletePostByID(ctx context.Context, id int32) error
+	DeleteSessionsByUserID(ctx context.Context, userID int32) error
+	FindPostByID(ctx context.Context, id int32) (FindPostByIDRow, error)
+	FindUserByEmail(ctx context.Context, email string) (User, error)
+	FindUserByID(ctx context.Context, id int32) (User, error)
+	GetSession(ctx context.Context, id string) (Session, error)
+	ListAllPosts(ctx context.Context) ([]ListAllPostsRow, error)
+	RevokeSession(ctx context.Context, id string) error
+	UpdatePostCore(ctx context.Context, arg UpdatePostCoreParams) error
 }
 
 var _ Querier = (*Queries)(nil)

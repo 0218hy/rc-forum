@@ -7,9 +7,13 @@ import (
 	"rc-forum-backend/internal/env"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// load .env
+	_ = godotenv.Load()
+	
 	ctx := context.Background()
 
 	cfg := config{

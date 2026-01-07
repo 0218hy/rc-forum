@@ -4,7 +4,9 @@ import (
 	"log"
 	"net/http"
 	repo "rc-forum-backend/db/sqlc"
-	"rc-forum-backend/internal/products"
+	"rc-forum-backend/internal/auth"
+	"rc-forum-backend/internal/env"
+	"rc-forum-backend/internal/posts"
 	"rc-forum-backend/internal/users"
 	"time"
 
@@ -26,17 +28,39 @@ func (app *application) mount() http.Handler {
 
 	r.Use(middleware.Timeout(60 * time.Second)) 
 
+	// secret key 
+	var secretKey = env.GetString("secretKey", "01234567890123456789012345678901") // 32 chars
+	if len(secretKey) < 32 {
+		log.Fatal("secretKey must be at least 32 characters long")
+	}
+
+	// health check
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("all good\n"))
   	})
 
-	productService := products.NewService(repo.New(app.db))
-	productHandler := products.NewHandler(productService)
-	r.Get("/products", productHandler.ListProducts)
-
+	// For users
 	usersService := users.NewService(repo.New(app.db))
 	usersHandler := users.NewHandler(usersService)
-	r.Get("/users/{id}", usersHandler.GetUserProfile)
+	r.Get("/users/{id}", usersHandler.GetUserByID)
+	r.Get("/users/email/{email}", usersHandler.GetUserByEmail)
+
+	// For auth
+	authService := auth.NewService(repo.New(app.db))
+	authHandler := auth.NewHandler(authService, usersService, secretKey)
+	r.Post("/register", authHandler.HandleRegister)
+	r.Post("/login", authHandler.HandleLogin)
+	r.Post("/logout", authHandler.HandleLogout)
+	r.Post("/renew_access_token", authHandler.RenewAccessToken)
+	
+
+	// For posts
+	postsService := posts.NewService(repo.New(app.db), app.db)
+	postsHandler := posts.NewHandler(postsService)
+	r.Get("/posts", postsHandler.GetAllPosts)
+	r.Get("/posts/{id}", postsHandler.GetPostByID)
+	r.Delete("/posts/{id}", postsHandler.DeletePostByID)
+	r.Post("/posts", postsHandler.CreatePost)
 
 	return r
 }

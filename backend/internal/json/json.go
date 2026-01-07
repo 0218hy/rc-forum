@@ -16,3 +16,4 @@ func Read(r *http.Request, data any) error {
 	decode.DisallowUnknownFields() // to avoid silent errors and prevent malicious input
 	return decode.Decode(data)
 }
+

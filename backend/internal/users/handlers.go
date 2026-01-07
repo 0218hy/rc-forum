@@ -5,10 +5,9 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"rc-forum-backend/internal/auth"
 	"rc-forum-backend/internal/json"
-	"strconv"
-
-	"github.com/go-chi/chi/v5"
+	"rc-forum-backend/internal/utility"
 )
 
 
@@ -22,19 +21,29 @@ func NewHandler(service Service) *handler {
 	}
 }
 
-// AUTH: FUNC GetMyProfile
+func (h *handler) GetMyProfile(w http.ResponseWriter, r *http.Request) {
+	claims := r.Context().Value(auth.AuthKey{}).(*auth.UserClaims)
 
-func (h *handler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
+	user, err := h.service.GetUserByID(r.Context(), claims.ID)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Failed to get user profile", http.StatusInternalServerError)
+		return
+	}
+	
+	json.Write(w, http.StatusOK, user)
+}
+
+func (h *handler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 	// 1. Call service -> GetUserProfile
-	id := chi.URLParam(r, "id")
-	userID, err := strconv.Atoi(id)
+	userID, err := utility.GetID(r)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
-	profile, err := h.service.GetUserProfile(r.Context(), int32(userID))
+	user, err := h.service.GetUserByID(r.Context(), userID)
 	if err != nil {
 		 if errors.Is(err, sql.ErrNoRows) {
 			log.Println("No user found with that ID")
@@ -48,5 +57,23 @@ func (h *handler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 2. Return JSON response into an HTTP response
-	json.Write(w, http.StatusOK, profile)
+	json.Write(w, http.StatusOK, user)
+}
+
+func (h *handler) GetUserByEmail(w http.ResponseWriter, r *http.Request) {
+	email, err := utility.GetEmail(r)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return 
+	}
+
+	user, err := h.service.GetUserByEmail(r.Context(), email)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Invalid user email", http.StatusBadRequest)
+		return
+	}
+
+	json.Write(w, http.StatusOK, user)
 }
