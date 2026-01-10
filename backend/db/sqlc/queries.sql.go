@@ -28,6 +28,33 @@ func (q *Queries) CreateAnnouncement(ctx context.Context, arg CreateAnnouncement
 	return err
 }
 
+const createComment = `-- name: CreateComment :one
+INSERT INTO comments (
+    post_id,
+    author_id,
+    body
+) VALUES ($1, $2, $3) RETURNING id, post_id, author_id, body, created_at
+`
+
+type CreateCommentParams struct {
+	PostID   int32  `json:"post_id"`
+	AuthorID int32  `json:"author_id"`
+	Body     string `json:"body"`
+}
+
+func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error) {
+	row := q.db.QueryRow(ctx, createComment, arg.PostID, arg.AuthorID, arg.Body)
+	var i Comment
+	err := row.Scan(
+		&i.ID,
+		&i.PostID,
+		&i.AuthorID,
+		&i.Body,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createMarketplace = `-- name: CreateMarketplace :exec
 INSERT INTO marketplace_posts (
     post_id,
@@ -206,6 +233,20 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (int32, 
 	var id int32
 	err := row.Scan(&id)
 	return id, err
+}
+
+const deleteCommentByID = `-- name: DeleteCommentByID :exec
+DELETE FROM comments WHERE id = $1 AND author_id = $2
+`
+
+type DeleteCommentByIDParams struct {
+	ID       int32 `json:"id"`
+	AuthorID int32 `json:"author_id"`
+}
+
+func (q *Queries) DeleteCommentByID(ctx context.Context, arg DeleteCommentByIDParams) error {
+	_, err := q.db.Exec(ctx, deleteCommentByID, arg.ID, arg.AuthorID)
+	return err
 }
 
 const deletePostByID = `-- name: DeletePostByID :exec
@@ -450,6 +491,36 @@ func (q *Queries) ListAllPosts(ctx context.Context) ([]ListAllPostsRow, error) {
 			&i.OpenjioEventDate,
 			&i.OpenjioStartTime,
 			&i.OpenjioEndTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listCommentsByPostID = `-- name: ListCommentsByPostID :many
+SELECT id, post_id, author_id, body, created_at FROM comments WHERE post_id = $1 ORDER BY created_at ASC
+`
+
+func (q *Queries) ListCommentsByPostID(ctx context.Context, postID int32) ([]Comment, error) {
+	rows, err := q.db.Query(ctx, listCommentsByPostID, postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Comment
+	for rows.Next() {
+		var i Comment
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.AuthorID,
+			&i.Body,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}

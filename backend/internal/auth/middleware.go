@@ -71,3 +71,11 @@ func verifyClaimsFromAuthHeader(r *http.Request, tokenMaker *JWTMaker) (*UserCla
 
 	return claims, nil
 }
+
+func FromContext(ctx context.Context) (*UserClaims, bool) {
+	claims, ok := ctx.Value(AuthKey{}).(*UserClaims)
+	if !ok {
+		return nil, false
+	}
+	return claims, true
+}

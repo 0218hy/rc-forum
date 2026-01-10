@@ -11,5 +11,5 @@ CREATE TABLE IF NOT EXISTS comments (
 
 -- +goose Down
 -- +goose StatementBegin
-DELETE TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS comments;
 -- +goose StatementEnd

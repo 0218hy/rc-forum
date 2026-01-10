@@ -82,7 +82,7 @@ func (app *application) mount() http.Handler {
 	// Auth user 
 	r.Group(func(r chi.Router) {
 		r.Use(auth.GetAuthMiddlewareFunc(tokenMaker))
-		r.Patch("/posts/{id}", postsHandler.UpdatePostByID)
+		r.Patch("/posts/{id}", postsHandler.UpdatePostCore)
 		r.Post("/posts", postsHandler.CreatePost)
 	})
 

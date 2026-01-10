@@ -27,6 +27,24 @@ func GetEmail(r *http.Request) (string, error) {
 	return email, nil
 }
 
+func GetPostID (r *http.Request) (int32, error) {
+	postIDStr := chi.URLParam(r, "post_id")
+	postID, err := strconv.ParseInt(postIDStr, 10, 64)
+	if err != nil || postID <= 0 {
+		return 0, errors.New("Invalid post ID")		
+	}
+	return int32(postID), nil
+}
+
+func GetCommentID (r *http.Request) (int32, error) {
+	commentIDStr := chi.URLParam(r, "comment_id")
+	commentID, err := strconv.ParseInt(commentIDStr, 10, 64)
+	if err != nil || commentID <= 0 {
+		return 0, errors.New("Invalid comment ID")		
+	}
+	return int32(commentID), nil
+}
+
 func GetSessionID(r *http.Request) (int32, error) {
 	sessionIDStr := chi.URLParam(r, "session_id")
 	sessionID, err := strconv.ParseInt(sessionIDStr, 10, 64)
@@ -36,6 +54,3 @@ func GetSessionID(r *http.Request) (int32, error) {
 	return int32(sessionID), nil
 }
 
-func IsPostOwner(postAuthorID int32, requesterID int32) bool {
-	return postAuthorID == requesterID
-}

@@ -13,35 +13,12 @@ type CreatePostRequest struct {
 	Openjio      *CreateOpenjio       `json:"openjio,omitempty"`
 }
 
+
 type UpdatePostCoreRequest struct {
-	AuthorID     int32  `json:"author_id"`
-	Title  string `json:"title,omitempty"`
-	Body   string `json:"body,omitempty"`
+	Title     string `json:"title"`
+	Body      string `json:"body"`
 }
 
-type UpdateAnnouncementRequest struct {
-	ExpiresAt pgtype.Timestamp `json:"expires_at,omitempty"`
-}
-
-type UpdateReportRequest struct {
-	Status  string `json:"status,omitempty"`
-	Urgency string `json:"urgency,omitempty"`
-}
-
-type UpdateMarketplaceRequest struct {
-	Listing       string
-	Price         pgtype.Numeric
-	Quantity      int32
-	ListingStatus string
-}
-
-type UpdateOpenjioRequest struct {
-	ActivityCategory string
-	Location         string
-	EventDate        pgtype.Date
-	StartTime        pgtype.Time
-	EndTime          pgtype.Time
-}
 
 type PostType string
 

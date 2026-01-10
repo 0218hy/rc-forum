@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"rc-forum-backend/internal/auth"
 	"rc-forum-backend/internal/json"
 	"rc-forum-backend/internal/utility"
 )
@@ -97,12 +98,21 @@ func (h *handler) CreatePost (w http.ResponseWriter, r *http.Request){
 
 
 func (h *handler) UpdatePostCore (w http.ResponseWriter, r *http.Request){
-	id , err := utility.GetID(r)
+	postID , err := utility.GetID(r)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "Invalid post ID", http.StatusBadRequest)
 		return
 	}
+
+	claims, ok := auth.FromContext(r.Context())
+	if !ok {
+		log.Println("Failed to get author ID from context")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	authorID := claims.ID
 
 	var tempPost UpdatePostCoreRequest
 	if err := json.Read(r, &tempPost); err != nil {
@@ -111,7 +121,7 @@ func (h *handler) UpdatePostCore (w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	if err := h.service.UpdatePostCore(r.Context(), id, tempPost); err != nil {
+	if err := h.service.UpdatePostCore(r.Context(), postID, authorID, tempPost.Title, tempPost.Body); err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

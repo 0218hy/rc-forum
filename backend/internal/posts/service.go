@@ -7,7 +7,6 @@ import (
 	repo "rc-forum-backend/db/sqlc"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"rc-forum-backend/internal/utility"
 )
 
 type Service interface {
@@ -15,6 +14,7 @@ type Service interface {
 	GetPostByID(ctx context.Context, postID int32) (repo.FindPostByIDRow, error)
 	DeletePostByID(ctx context.Context, postID int32) error
 	CreatePost(ctx context.Context, req CreatePostRequest) (int32, error)
+	UpdatePostCore(ctx context.Context, postID int32, authorID int32, title string, body string) error
 }
 
 type svc struct {
@@ -109,15 +109,23 @@ func (s *svc) CreatePost(ctx context.Context, req CreatePostRequest) (int32, err
 	return post.ID, nil
 }
 
-func (s *svc) UpdatePostCore(ctx context.Context, postID int32, req UpdatePostCoreRequest) error {
-	isOwner := utility.IsPostOwner(req.AuthorID, postID)
-	if !isOwner {
-		return errors.New("unauthorized: not the post owner")
+// MVP: only allow author to update title and body (future work: update subtypes)
+func (s *svc) UpdatePostCore (ctx context.Context, postID int32, authorID int32, title string, body string) error {
+	// 1. get existing post
+	existingPost, err := s.repo.FindPostByID(ctx, postID)
+	if err != nil {
+		return err
+	}
+
+	// 2. check authorization
+	if existingPost.AuthorID != authorID {
+		return errors.New("unauthorized: only author can update the post")
 	}
 
 	return s.repo.UpdatePostCore(ctx, repo.UpdatePostCoreParams{
 		ID:    postID,
-		Title: req.Title,
-		Body:  req.Body,
+		Title: title,
+		Body:  body,
 	})
+
 }

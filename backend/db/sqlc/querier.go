@@ -10,12 +10,14 @@ import (
 
 type Querier interface {
 	CreateAnnouncement(ctx context.Context, arg CreateAnnouncementParams) error
+	CreateComment(ctx context.Context, arg CreateCommentParams) (Comment, error)
 	CreateMarketplace(ctx context.Context, arg CreateMarketplaceParams) error
 	CreateOpenjio(ctx context.Context, arg CreateOpenjioParams) error
 	CreatePost(ctx context.Context, arg CreatePostParams) (Post, error)
 	CreateReport(ctx context.Context, arg CreateReportParams) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (int32, error)
+	DeleteCommentByID(ctx context.Context, arg DeleteCommentByIDParams) error
 	DeletePostByID(ctx context.Context, id int32) error
 	DeleteSessionsByUserID(ctx context.Context, userID int32) error
 	DeleteUserByID(ctx context.Context, id int32) error
@@ -24,6 +26,7 @@ type Querier interface {
 	FindUserByID(ctx context.Context, id int32) (User, error)
 	GetSession(ctx context.Context, id string) (Session, error)
 	ListAllPosts(ctx context.Context) ([]ListAllPostsRow, error)
+	ListCommentsByPostID(ctx context.Context, postID int32) ([]Comment, error)
 	RevokeSession(ctx context.Context, id string) error
 	UpdatePostCore(ctx context.Context, arg UpdatePostCoreParams) error
 }

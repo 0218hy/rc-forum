@@ -142,3 +142,16 @@ DELETE FROM sessions WHERE user_id = $1;
 
 -- name: DeleteUserByID :exec
 DELETE FROM users WHERE id = $1;
+
+-- name: CreateComment :one
+INSERT INTO comments (
+    post_id,
+    author_id,
+    body
+) VALUES ($1, $2, $3) RETURNING *;
+
+-- name: ListCommentsByPostID :many
+SELECT * FROM comments WHERE post_id = $1 ORDER BY created_at ASC;  
+
+-- name: DeleteCommentByID :exec
+DELETE FROM comments WHERE id = $1 AND author_id = $2;
