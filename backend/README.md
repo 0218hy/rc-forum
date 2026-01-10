@@ -44,3 +44,6 @@ Residential College (RC) web forum is a centralized web-based platform to suppor
 1. ```git add <file> ``` or ```git add .```
 2. ```git commit -m "your commit message```
 3. ```git push```
+
+# To run test on handlers
+``` go test -v ./internal/users```

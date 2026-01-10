@@ -64,14 +64,14 @@ func (h *handler) GetUserByEmail(w http.ResponseWriter, r *http.Request) {
 	email, err := utility.GetEmail(r)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return 
 	}
 
 	user, err := h.service.GetUserByEmail(r.Context(), email)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "Invalid user email", http.StatusBadRequest)
+		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
 
