@@ -11,8 +11,8 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <Navbar/>
-      <Feed />
       <Sidebar />
+      <Feed />
       <p> Hello </p>
     </ThemeProvider>
   )
