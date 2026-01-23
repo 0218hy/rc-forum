@@ -1,6 +1,10 @@
 import { styled, Toolbar, Box, AppBar, Typography, InputBase, Avatar, Menu, MenuItem} from "@mui/material";
-import { Apartment } from "@mui/icons-material";
 import React, { useState } from "react";
+import MenuIcon from '@mui/icons-material/Menu';
+
+type Props = {
+    onMenuClick: () => void;
+}
 
 const StyledToolBar = styled(Toolbar) ({
     display: "flex",
@@ -20,7 +24,7 @@ const UserBox = styled(Box) ({
     gap: "10px",
 });
 
-const Navbar = () => {
+const Navbar = ({onMenuClick}: Props) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement> (null)
     const open = Boolean (anchorEl);
 
@@ -32,12 +36,14 @@ const Navbar = () => {
     };
 
     return (
-        <AppBar position = "sticky">
+        <AppBar position = "fixed">
             <StyledToolBar>
                 <Typography variant = "h6" sx = {{display : { xs: "none", sm: "block"}}}>
                     Hayoung
                 </Typography>
-                <Apartment sx={{display: { xs: "block", sm: "none"}}} />
+                { <MenuIcon
+                    sx={{display: { xs: "block", sm: "none"}}}
+                    onClick={onMenuClick}/>}
                 
                 <Search>
                     <InputBase placeholder = "search for posts" />
