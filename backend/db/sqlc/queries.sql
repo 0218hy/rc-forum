@@ -155,3 +155,27 @@ SELECT * FROM comments WHERE post_id = $1 ORDER BY created_at ASC;
 
 -- name: DeleteCommentByID :exec
 DELETE FROM comments WHERE id = $1 AND author_id = $2;
+
+-- name: GetPostsWithAuthors :many
+SELECT
+  p.id,
+  p.type,
+  p.body,
+  p.created_at,
+  u.id   AS author_id,
+  u.name AS author_name
+FROM posts p
+JOIN users u ON p.author_id = u.id
+ORDER BY p.created_at DESC;
+
+-- name: GetCommentsByPostIDs :many
+SELECT
+  c.id,
+  c.post_id,
+  u.name AS author,
+  c.body,
+  c.created_at
+FROM comments c
+JOIN users u ON c.author_id = u.id
+WHERE c.post_id = ANY($1::int[])
+ORDER BY c.created_at ASC;

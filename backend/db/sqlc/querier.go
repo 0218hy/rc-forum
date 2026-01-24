@@ -24,6 +24,8 @@ type Querier interface {
 	FindPostByID(ctx context.Context, id int32) (FindPostByIDRow, error)
 	FindUserByEmail(ctx context.Context, email string) (User, error)
 	FindUserByID(ctx context.Context, id int32) (User, error)
+	GetCommentsByPostIDs(ctx context.Context, dollar_1 []int32) ([]GetCommentsByPostIDsRow, error)
+	GetPostsWithAuthors(ctx context.Context) ([]GetPostsWithAuthorsRow, error)
 	GetSession(ctx context.Context, id string) (Session, error)
 	ListAllPosts(ctx context.Context) ([]ListAllPostsRow, error)
 	ListCommentsByPostID(ctx context.Context, postID int32) ([]Comment, error)

@@ -58,4 +58,24 @@ type CreateOpenjio struct {
 	EndTime          pgtype.Time
 }
 
+type AuthorResponse struct {
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
+}
 
+type CommentResponse struct {
+	ID        int32            `json:"id"`
+	Author    string           `json:"author"`
+	Body      string           `json:"body"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+}
+
+type PostResponse struct {
+	ID        int32            `json:"id"`
+	Type      PostType         `json:"type"`
+	Title     string           `json:"title"`
+	Body      string           `json:"body"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+	Author    AuthorResponse   `json:"author"`
+	Comments  []CommentResponse `json:"comments"`
+}

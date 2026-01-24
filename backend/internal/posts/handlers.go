@@ -129,3 +129,15 @@ func (h *handler) UpdatePostCore (w http.ResponseWriter, r *http.Request){
 
 	json.Write(w, http.StatusOK, nil)
 }
+
+func (h *handler) GetAllPostsWithAuthors(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	posts, err := h.service.GetAllPostsWithAuthors(ctx)
+	if err != nil {
+		http.Error(w, "failed to fetch posts", http.StatusInternalServerError)
+		return
+	}
+
+	json.Write(w, http.StatusOK, posts)
+}

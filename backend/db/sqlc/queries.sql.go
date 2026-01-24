@@ -390,6 +390,102 @@ func (q *Queries) FindUserByID(ctx context.Context, id int32) (User, error) {
 	return i, err
 }
 
+const getCommentsByPostIDs = `-- name: GetCommentsByPostIDs :many
+SELECT
+  c.id,
+  c.post_id,
+  u.name AS author,
+  c.body,
+  c.created_at
+FROM comments c
+JOIN users u ON c.author_id = u.id
+WHERE c.post_id = ANY($1::int[])
+ORDER BY c.created_at ASC
+`
+
+type GetCommentsByPostIDsRow struct {
+	ID        int32            `json:"id"`
+	PostID    int32            `json:"post_id"`
+	Author    string           `json:"author"`
+	Body      string           `json:"body"`
+	CreatedAt pgtype.Timestamp `json:"created_at"`
+}
+
+func (q *Queries) GetCommentsByPostIDs(ctx context.Context, dollar_1 []int32) ([]GetCommentsByPostIDsRow, error) {
+	rows, err := q.db.Query(ctx, getCommentsByPostIDs, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCommentsByPostIDsRow
+	for rows.Next() {
+		var i GetCommentsByPostIDsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.Author,
+			&i.Body,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPostsWithAuthors = `-- name: GetPostsWithAuthors :many
+SELECT
+  p.id,
+  p.type,
+  p.body,
+  p.created_at,
+  u.id   AS author_id,
+  u.name AS author_name
+FROM posts p
+JOIN users u ON p.author_id = u.id
+ORDER BY p.created_at DESC
+`
+
+type GetPostsWithAuthorsRow struct {
+	ID         int32            `json:"id"`
+	Type       PostType         `json:"type"`
+	Body       string           `json:"body"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	AuthorID   int32            `json:"author_id"`
+	AuthorName string           `json:"author_name"`
+}
+
+func (q *Queries) GetPostsWithAuthors(ctx context.Context) ([]GetPostsWithAuthorsRow, error) {
+	rows, err := q.db.Query(ctx, getPostsWithAuthors)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPostsWithAuthorsRow
+	for rows.Next() {
+		var i GetPostsWithAuthorsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Type,
+			&i.Body,
+			&i.CreatedAt,
+			&i.AuthorID,
+			&i.AuthorName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSession = `-- name: GetSession :one
 SELECT id, email, user_id, refresh_token, is_revoked, expires_at, created_at FROM sessions WHERE id = $1
 `
