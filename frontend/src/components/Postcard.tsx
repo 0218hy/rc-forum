@@ -21,24 +21,22 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 // Colors
 const MAROON = "#800000";
 const LIGHT_PINK = "#f9e8eaff";
-const COMMENT_BG = "#FFF7D6";
 
 // Types
 type Comment = { id: number; author: string; content: string };
 type PostProps = {
-  author: string;
-  createdAt: string;
-  content: string;
-  initialComments?: Comment[];
+    author: string;
+    createdAt: string;
+    content: string;
+    comments: Comment[];
 };
-
+  
 export default function PostCard({
   author,
   createdAt,
   content,
-  initialComments = [],
+  comments
 }: PostProps) {
-  const [comments, setComments] = useState<Comment[]>(initialComments);
   const [newComment, setNewComment] = useState("");
 
   return (
@@ -68,8 +66,8 @@ export default function PostCard({
       />
 
       {/* Post Content */}
-      <CardContent align="left" sx={{ backgroundColor: LIGHT_PINK }}>
-        <Typography>{content}</Typography>
+      <CardContent sx={{ backgroundColor: LIGHT_PINK }}>
+        <Typography align="left">{content}</Typography>
       </CardContent>
 
       <Divider />
