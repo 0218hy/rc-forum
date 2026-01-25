@@ -1,20 +1,16 @@
 # Residential College (RC) Forum
 Residential College (RC) web forum is a centralized web-based platform to support communication, coordination and community interaction within RC. It merges announcements, issue reporting and day-to-day communication (Buy / Sell /Give and Open Jio) into a single web forum.
 
----
 
 ## Motivation
 As communication is fragmented across Telegram, email and word-of-mouth, this results in loss of information, difficulty tracking issues and poor searchability.
 
----
 
 ## AI usage
 AI was used solely for mock data generation.
 
----
 
 ## Tech Stack
-
 **Backend**
 - Go (Chi)
 - PostgreSQL
@@ -27,7 +23,6 @@ AI was used solely for mock data generation.
 - TypeScript
 - Vite
 
---- 
 
 ## Project Overview
 
@@ -37,7 +32,6 @@ The project follows a decoupled architecture:
 - Frontend focuses on UI structure and basic data presentation.
 - Full frontend–backend integration is partially completed at the time of submission.
 
----
 
 ## User Manual
 
@@ -53,7 +47,6 @@ The project follows a decoupled architecture:
 2.	Install dependencies: npm install
 3.	Start the development server: npm run dev
 
---- 
 
 ## Limitation
 -	Authentication is implemented in the backend but not integrated into the frontend UI
@@ -61,7 +54,7 @@ The project follows a decoupled architecture:
 -	Not all backend features (register, login) are exposed through frontend integrations
 -	End-to-end session handling is not demonstrated via frontend
 
---- 
+
 ## Intended integration
 These integrations are partially implemented and were planned for further development
 -	Frontend communicates with backend REST APIs
@@ -69,7 +62,6 @@ These integrations are partially implemented and were planned for further develo
 -	Post and comments are dynamically rendered from backend responses
 -	Role-based access control governs functionality.
 
----
 
 ## Reflection
 Two months ago, I could not imagine being able to complete what is now in front of me. What felt impossible at the start of this assignment has gradually become something tangible. This assignment, which deliberately forced us to learn without relying on AI, pushed me far beyond my comfort zone and fundamentally changed how I approach learning with AI. 
