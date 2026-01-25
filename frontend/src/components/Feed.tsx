@@ -1,50 +1,39 @@
-import React from "react";
-import { Box } from "@mui/material";
-import PostCard from "./Postcard"
+import React, { useEffect, useState } from "react";
+import { Box, Typography } from "@mui/material";
+import PostCard from "./Postcard";
+import { getPosts, type BackendPost } from "../api/posts";
+import {mockPosts} from "../api/mockPosts";
 
 export default function Feed() {
-  const posts = [
-    {
-      id: 1,
-      author: "Lee Hayoung",
-      createdAt: "2026-01-23",
-      content: "This is my first post on the forum!",
-      comments: [
-        { id: 1, author: "Alice", content: "Nice post!" },
-        { id: 2, author: "Bob", content: "Welcome!" },
-      ],
-    },
-    {
-      id: 1,
-      author: "Lee Hayoung",
-      createdAt: "2026-01-23",
-      content: "This is my first post on the forum!",
-      comments: [
-        { id: 1, author: "Alice", content: "Nice post!" },
-        { id: 2, author: "Bob", content: "Welcome!" },
-      ],
-    },
-    {
-      id: 1,
-      author: "Lee Hayoung",
-      createdAt: "2026-01-23",
-      content: "This is my first post on the forum!",
-      comments: [
-        { id: 1, author: "Alice", content: "Nice post!" },
-        { id: 2, author: "Bob", content: "Welcome!" },
-      ],
-    },
-  ];
+  // to show sample for frontend
+  const [posts, setPosts] = useState<BackendPost[]>(mockPosts);
+  const [loading, setLoading] = useState(true);
+  
+
+  useEffect(() => {
+    getPosts() // later: getPosts("announcement"), for now get all post
+      .then(setPosts)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <Typography align="center">Loading...</Typography>;
+  }
 
   return (
     <Box sx={{ maxWidth: 600, mx: "auto" }}>
       {posts.map((p) => (
         <PostCard
           key={p.id}
-          author={p.author}
-          createdAt={p.createdAt}
-          content={p.content}
-          initialComments={p.comments}
+          author={p.author.name} 
+          createdAt={p.created_at}
+          content={p.body}
+          comments = {p.comments.map((c) => ({
+            id: c.id,
+            author: c.author.name,
+            content: c.body,
+          }))}
         />
       ))}
     </Box>
