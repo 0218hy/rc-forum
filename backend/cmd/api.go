@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 	repo "rc-forum-backend/db/sqlc"
-	"rc-forum-backend/internal/auth/authhttp"
 	"rc-forum-backend/internal/auth"
+	"rc-forum-backend/internal/auth/authhttp"
 	"rc-forum-backend/internal/env"
 	"rc-forum-backend/internal/posts"
 	"rc-forum-backend/internal/users"
@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -29,8 +30,16 @@ func (app *application) mount() http.Handler {
 
 	r.Use(middleware.Timeout(60 * time.Second)) 
 
+	// CORS
+	r.Use(cors.Handler(cors.Options{
+        AllowedOrigins: []string{"http://localhost:3000"},
+        AllowedMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+        AllowedHeaders: []string{"*"},
+        AllowCredentials: true,
+    }))
+
 	// secret key 
-	var secretKey = env.GetString("secretKey", "01234567890123456789012345678901") // 32 chars
+	var secretKey = env.GetString("JWT_SECRET", "01234567890123456789012345678901") // 32 chars
 	if len(secretKey) < 32 {
 		log.Fatal("secretKey must be at least 32 characters long")
 	}

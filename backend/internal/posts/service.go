@@ -15,6 +15,7 @@ type Service interface {
 	DeletePostByID(ctx context.Context, postID int32) error
 	CreatePost(ctx context.Context, req CreatePostRequest) (int32, error)
 	UpdatePostCore(ctx context.Context, postID int32, authorID int32, title string, body string) error
+	GetAllPostsWithAuthors (ctx context.Context) ([]PostResponse, error)
 }
 
 type svc struct {
@@ -129,3 +130,50 @@ func (s *svc) UpdatePostCore (ctx context.Context, postID int32, authorID int32,
 	})
 
 }
+
+func (s *svc) GetAllPostsWithAuthors (ctx context.Context) ([]PostResponse, error) {
+	posts, err := s.repo.GetPostsWithAuthors(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	postIDs := make([]int32, 0, len(posts))
+	result := make([]PostResponse, 0, len(posts))
+	postIndex := make(map[int32]int)
+
+	for i, p := range posts {
+		postIDs = append(postIDs, p.ID)
+
+		result = append(result, PostResponse{
+			ID:        p.ID,
+			Type:      PostType(p.Type),
+			Body:      p.Body,
+			CreatedAt: p.CreatedAt,
+			Author: AuthorResponse{
+				ID:   p.AuthorID,
+				Name: p.AuthorName,
+			},
+			Comments: []CommentResponse{},
+		})
+
+		postIndex[p.ID] = i
+	}
+
+	comments, err := s.repo.GetCommentsByPostIDs(ctx, postIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, c := range comments {
+		i := postIndex[c.PostID]
+		result[i].Comments = append(result[i].Comments, CommentResponse{
+			ID:        c.ID,
+			Author:    c.Author,
+			Body:      c.Body,
+			CreatedAt: c.CreatedAt,
+		})
+	}
+
+	return result, nil
+}
+
